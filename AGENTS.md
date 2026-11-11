@@ -9,7 +9,8 @@ Minecraft Bedrock Add-on für Unterwassererkundung. Das Projekt erzeugt ein Beha
 - `npm run typecheck` prüft TypeScript.
 - `npm run build` bündelt das Bedrock-Skript nach `dist/` und kopiert die Packs.
 - `npm run validate` prüft alle Pack-JSON-Dateien und Manifeste.
-- `npm run package` baut und erstellt `release/nautic-explorer.mcaddon`.
+- `npm run package` baut und erstellt die aktuelle Testversion `test/nautic-explorer.mcaddon`.
+- `npm run package:release` baut einen versionierten Release unter `release/nautic-explorer-<version>.mcaddon`.
 
 ## Architektur
 

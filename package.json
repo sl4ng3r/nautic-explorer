@@ -9,7 +9,8 @@
     "typecheck": "tsc --noEmit",
     "build": "node tools/build.mjs",
     "validate": "node tools/validate-pack.mjs",
-    "package": "npm run build && node tools/package-addon.mjs"
+    "package": "npm run build && node tools/package-addon.mjs",
+    "package:release": "npm run build && node tools/package-addon.mjs --release"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",

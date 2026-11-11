@@ -1,3 +1,5 @@
 node_modules/
 release/*.mcpack
+release/.staging/
+test/.staging/
 .DS_Store
