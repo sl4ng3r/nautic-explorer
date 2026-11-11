@@ -2,6 +2,8 @@
 // @ts-nocheck
 import { EquipmentSlot, EntityComponentTypes, system, world } from "@minecraft/server";
 import { ActionFormData } from "@minecraft/server-ui";
+import { GUIDE_RECIPES } from "../domain/guide";
+import { encodeHudStatus } from "../domain/hud";
 
 const POTION_ID = "nautic:deep_breath_potion";
 const GUIDE_ID = "nautic:explorer_guide";
@@ -97,13 +99,24 @@ async function showGuide(player) {
   const result = await form.show(player);
   if (result.canceled) return;
   if (result.selection === 4) return showStatusSettings(player);
-  const details = [
-    "2 Fleischbündel + 2 Kugelfische + 1 Glasflasche\n5 Minuten Wasseratmung.",
-    "3 getrocknete Seetangblöcke + 6 Leder\nDauerhaft 10 % schneller im Wasser.",
-    "Einfache Flossen + 1 Diamantblock + 2 Nautilusschalen + 2 getrocknete Seetangblöcke\nDauerhaft 50 % schneller im Wasser.",
-    "9 verrottetes Fleisch\nErgibt ein Fleischbündel.",
-  ];
-  await new ActionFormData().title("Rezept").body(details[result.selection]).button("Zurück").show(player);
+  const guide = GUIDE_RECIPES[result.selection];
+  if (guide) await showRecipe(player, guide);
+}
+
+async function showRecipe(player, guide) {
+  while (true) {
+    const form = new ActionFormData()
+      .title(guide.title)
+      .body(`§lWirkung§r\n${guide.effect}\n\n§lZutaten§r\nJe Zutat ein eigenes Feld an der Werkbank belegen.`);
+    for (const ingredient of guide.ingredients) {
+      form.button(`${ingredient.count} × ${ingredient.name}`, ingredient.icon);
+    }
+    form.button("Zurück");
+    const result = await form.show(player);
+    if (result.canceled) return;
+    if (result.selection === guide.ingredients.length) return showGuide(player);
+  }
+
 }
 
 async function showStatusSettings(player) {
@@ -135,6 +148,7 @@ world.afterEvents.itemUse.subscribe(({ source, itemStack }) => {
 system.runInterval(() => {
   for (const player of world.getPlayers()) {
     updateFlipperSpeed(player);
-    player.onScreenDisplay.setActionBar(statusText(player));
+    const status = statusText(player);
+    if (status) player.onScreenDisplay.setActionBar(encodeHudStatus(status));
   }
 }, 10);

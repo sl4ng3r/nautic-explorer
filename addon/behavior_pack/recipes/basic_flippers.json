@@ -1,13 +1,47 @@
 {
   "format_version": "1.20.10",
   "minecraft:recipe_shapeless": {
-    "description": { "identifier": "nautic:basic_flippers" },
-    "tags": ["crafting_table"],
-    "unlock": { "context": "AlwaysUnlocked" },
-    "ingredients": [
-      { "item": "minecraft:dried_kelp_block", "count": 3 },
-      { "item": "minecraft:leather", "count": 6 }
+    "description": {
+      "identifier": "nautic:basic_flippers"
+    },
+    "tags": [
+      "crafting_table"
     ],
-    "result": { "item": "nautic:basic_flippers", "count": 1 }
+    "unlock": {
+      "context": "AlwaysUnlocked"
+    },
+    "ingredients": [
+      {
+        "item": "minecraft:dried_kelp_block"
+      },
+      {
+        "item": "minecraft:dried_kelp_block"
+      },
+      {
+        "item": "minecraft:dried_kelp_block"
+      },
+      {
+        "item": "minecraft:leather"
+      },
+      {
+        "item": "minecraft:leather"
+      },
+      {
+        "item": "minecraft:leather"
+      },
+      {
+        "item": "minecraft:leather"
+      },
+      {
+        "item": "minecraft:leather"
+      },
+      {
+        "item": "minecraft:leather"
+      }
+    ],
+    "result": {
+      "item": "nautic:basic_flippers",
+      "count": 1
+    }
   }
 }

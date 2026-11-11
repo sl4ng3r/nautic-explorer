@@ -1,0 +1,40 @@
+{
+  "namespace": "hud",
+  "hud_actionbar_text": {
+    "$nautic_text": "$actionbar_text",
+    "visible": "(($nautic_text - '[nautic-hud]') = $nautic_text)"
+  },
+  "nautic_status": {
+    "type": "label",
+    "$nautic_text": "$actionbar_text",
+    "visible": "(not (($nautic_text - '[nautic-hud]') = $nautic_text))",
+    "text": "($nautic_text - '[nautic-hud]')",
+    "anchor_from": "top_right",
+    "anchor_to": "top_right",
+    "offset": [-8, 62],
+    "layer": 31,
+    "color": "$tool_tip_text",
+    "shadow": true,
+    "localize": false,
+    "alpha": "@hud.anim_actionbar_text_alpha_out"
+  },
+  "nautic_status_factory": {
+    "type": "panel",
+    "size": ["100%", "100%"],
+    "factory": {
+      "name": "hud_actionbar_text_factory",
+      "control_ids": {
+        "hud_actionbar_text": "nautic_status@hud.nautic_status"
+      }
+    }
+  },
+  "root_panel": {
+    "modifications": [
+      {
+        "array_name": "controls",
+        "operation": "insert_front",
+        "value": { "nautic_status_factory@hud.nautic_status_factory": {} }
+      }
+    ]
+  }
+}

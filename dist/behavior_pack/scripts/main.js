@@ -1,6 +1,36 @@
 // src/runtime/main.ts
 import { EquipmentSlot, EntityComponentTypes, system, world } from "@minecraft/server";
 import { ActionFormData } from "@minecraft/server-ui";
+
+// src/domain/guide.ts
+var GUIDE_RECIPES = [
+  { id: "deep_breath_potion", title: "Trank der Tiefenatmung", effect: "5 Minuten Wasseratmung.", ingredients: [
+    { item: "nautic:flesh_bundle", count: 2, name: "Fleischb\xFCndel", icon: "textures/items/flesh_bundle" },
+    { item: "minecraft:pufferfish", count: 2, name: "Kugelfisch", icon: "textures/items/fish_pufferfish_raw" },
+    { item: "minecraft:glass_bottle", count: 1, name: "Glasflasche", icon: "textures/items/potion_bottle_empty" }
+  ] },
+  { id: "basic_flippers", title: "Einfache Flossen", effect: "10 Prozent schneller im Wasser.", ingredients: [
+    { item: "minecraft:dried_kelp_block", count: 3, name: "Getrockneter Seetangblock", icon: "textures/blocks/dried_kelp_top" },
+    { item: "minecraft:leather", count: 6, name: "Leder", icon: "textures/items/leather" }
+  ] },
+  { id: "diamond_flippers", title: "Diamantflossen", effect: "50 Prozent schneller im Wasser.", ingredients: [
+    { item: "nautic:basic_flippers", count: 1, name: "Einfache Flossen", icon: "textures/items/basic_flippers" },
+    { item: "minecraft:diamond_block", count: 1, name: "Diamantblock", icon: "textures/blocks/diamond_block" },
+    { item: "minecraft:nautilus_shell", count: 2, name: "Nautilusschale", icon: "textures/items/nautilus" },
+    { item: "minecraft:dried_kelp_block", count: 2, name: "Getrockneter Seetangblock", icon: "textures/blocks/dried_kelp_top" }
+  ] },
+  { id: "flesh_bundle", title: "Fleischb\xFCndel", effect: "Ergibt ein Fleischb\xFCndel.", ingredients: [
+    { item: "minecraft:rotten_flesh", count: 9, name: "Verrottetes Fleisch", icon: "textures/items/rotten_flesh" }
+  ] }
+];
+
+// src/domain/hud.ts
+var HUD_MARKER = "[nautic-hud]";
+function encodeHudStatus(status) {
+  return status ? HUD_MARKER + status : "";
+}
+
+// src/runtime/main.ts
 var GUIDE_ID = "nautic:explorer_guide";
 var BASIC_FLIPPERS_ID = "nautic:basic_flippers";
 var DIAMOND_FLIPPERS_ID = "nautic:diamond_flippers";
@@ -78,13 +108,24 @@ async function showGuide(player) {
   const result = await form.show(player);
   if (result.canceled) return;
   if (result.selection === 4) return showStatusSettings(player);
-  const details = [
-    "2 Fleischb\xFCndel + 2 Kugelfische + 1 Glasflasche\n5 Minuten Wasseratmung.",
-    "3 getrocknete Seetangbl\xF6cke + 6 Leder\nDauerhaft 10 % schneller im Wasser.",
-    "Einfache Flossen + 1 Diamantblock + 2 Nautilusschalen + 2 getrocknete Seetangbl\xF6cke\nDauerhaft 50 % schneller im Wasser.",
-    "9 verrottetes Fleisch\nErgibt ein Fleischb\xFCndel."
-  ];
-  await new ActionFormData().title("Rezept").body(details[result.selection]).button("Zur\xFCck").show(player);
+  const guide = GUIDE_RECIPES[result.selection];
+  if (guide) await showRecipe(player, guide);
+}
+async function showRecipe(player, guide) {
+  while (true) {
+    const form = new ActionFormData().title(guide.title).body(`\xA7lWirkung\xA7r
+${guide.effect}
+
+\xA7lZutaten\xA7r
+Je Zutat ein eigenes Feld an der Werkbank belegen.`);
+    for (const ingredient of guide.ingredients) {
+      form.button(`${ingredient.count} \xD7 ${ingredient.name}`, ingredient.icon);
+    }
+    form.button("Zur\xFCck");
+    const result = await form.show(player);
+    if (result.canceled) return;
+    if (result.selection === guide.ingredients.length) return showGuide(player);
+  }
 }
 async function showStatusSettings(player) {
   const form = new ActionFormData().title("Statusanzeige").body("W\xE4hle, wie die aktive Atemzeit und Flossengeschwindigkeit erscheinen sollen.").button("Symbole").button("Text").button("Aus");
@@ -107,6 +148,7 @@ world.afterEvents.itemUse.subscribe(({ source, itemStack }) => {
 system.runInterval(() => {
   for (const player of world.getPlayers()) {
     updateFlipperSpeed(player);
-    player.onScreenDisplay.setActionBar(statusText(player));
+    const status = statusText(player);
+    if (status) player.onScreenDisplay.setActionBar(encodeHudStatus(status));
   }
 }, 10);

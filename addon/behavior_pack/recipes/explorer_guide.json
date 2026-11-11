@@ -1,13 +1,26 @@
 {
   "format_version": "1.20.10",
   "minecraft:recipe_shapeless": {
-    "description": { "identifier": "nautic:explorer_guide" },
-    "tags": ["crafting_table"],
-    "unlock": { "context": "AlwaysUnlocked" },
-    "ingredients": [
-      { "item": "minecraft:book", "count": 1 },
-      { "item": "minecraft:dried_kelp", "count": 1 }
+    "description": {
+      "identifier": "nautic:explorer_guide"
+    },
+    "tags": [
+      "crafting_table"
     ],
-    "result": { "item": "nautic:explorer_guide", "count": 1 }
+    "unlock": {
+      "context": "AlwaysUnlocked"
+    },
+    "ingredients": [
+      {
+        "item": "minecraft:book"
+      },
+      {
+        "item": "minecraft:dried_kelp"
+      }
+    ],
+    "result": {
+      "item": "nautic:explorer_guide",
+      "count": 1
+    }
   }
 }

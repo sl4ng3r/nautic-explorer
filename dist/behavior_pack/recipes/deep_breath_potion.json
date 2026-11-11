@@ -1,14 +1,35 @@
 {
   "format_version": "1.20.10",
   "minecraft:recipe_shapeless": {
-    "description": { "identifier": "nautic:deep_breath_potion" },
-    "tags": ["crafting_table"],
-    "unlock": { "context": "AlwaysUnlocked" },
-    "ingredients": [
-      { "item": "nautic:flesh_bundle", "count": 2 },
-      { "item": "minecraft:pufferfish", "count": 2 },
-      { "item": "minecraft:glass_bottle", "count": 1 }
+    "description": {
+      "identifier": "nautic:deep_breath_potion"
+    },
+    "tags": [
+      "crafting_table"
     ],
-    "result": { "item": "nautic:deep_breath_potion", "count": 1 }
+    "unlock": {
+      "context": "AlwaysUnlocked"
+    },
+    "ingredients": [
+      {
+        "item": "nautic:flesh_bundle"
+      },
+      {
+        "item": "nautic:flesh_bundle"
+      },
+      {
+        "item": "minecraft:pufferfish"
+      },
+      {
+        "item": "minecraft:pufferfish"
+      },
+      {
+        "item": "minecraft:glass_bottle"
+      }
+    ],
+    "result": {
+      "item": "nautic:deep_breath_potion",
+      "count": 1
+    }
   }
 }

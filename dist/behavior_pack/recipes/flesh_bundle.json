@@ -1,12 +1,47 @@
 {
   "format_version": "1.20.10",
   "minecraft:recipe_shapeless": {
-    "description": { "identifier": "nautic:flesh_bundle" },
-    "tags": ["crafting_table"],
-    "unlock": { "context": "AlwaysUnlocked" },
-    "ingredients": [
-      { "item": "minecraft:rotten_flesh", "count": 9 }
+    "description": {
+      "identifier": "nautic:flesh_bundle"
+    },
+    "tags": [
+      "crafting_table"
     ],
-    "result": { "item": "nautic:flesh_bundle", "count": 1 }
+    "unlock": {
+      "context": "AlwaysUnlocked"
+    },
+    "ingredients": [
+      {
+        "item": "minecraft:rotten_flesh"
+      },
+      {
+        "item": "minecraft:rotten_flesh"
+      },
+      {
+        "item": "minecraft:rotten_flesh"
+      },
+      {
+        "item": "minecraft:rotten_flesh"
+      },
+      {
+        "item": "minecraft:rotten_flesh"
+      },
+      {
+        "item": "minecraft:rotten_flesh"
+      },
+      {
+        "item": "minecraft:rotten_flesh"
+      },
+      {
+        "item": "minecraft:rotten_flesh"
+      },
+      {
+        "item": "minecraft:rotten_flesh"
+      }
+    ],
+    "result": {
+      "item": "nautic:flesh_bundle",
+      "count": 1
+    }
   }
 }

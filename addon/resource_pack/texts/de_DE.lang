@@ -1,5 +1,5 @@
-item.nautic:flesh_bundle.name=Fleischbündel
-item.nautic:deep_breath_potion.name=Trank der Tiefenatmung
-item.nautic:basic_flippers.name=Einfache Flossen
-item.nautic:diamond_flippers.name=Diamantflossen
-item.nautic:explorer_guide.name=Handbuch der Tiefen
+item.nautic:flesh_bundle=Fleischbündel
+item.nautic:deep_breath_potion=Trank der Tiefenatmung
+item.nautic:basic_flippers=Einfache Flossen
+item.nautic:diamond_flippers=Diamantflossen
+item.nautic:explorer_guide=Handbuch der Tiefen
