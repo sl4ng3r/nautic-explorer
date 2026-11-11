@@ -20,6 +20,6 @@ describe('recipe guide', () => {
   });
   it('passes the configured flipper percentages to translations', () => {
     expect(GUIDE_RECIPES[1].effect).toEqual({ translate: TEXT_KEYS.speedEffect, with: ['20'] });
-    expect(GUIDE_RECIPES[2].effect).toEqual({ translate: TEXT_KEYS.speedEffect, with: ['60'] });
+    expect(GUIDE_RECIPES[2].effect).toEqual({ translate: TEXT_KEYS.speedEffect, with: ['200'] });
   });
 });

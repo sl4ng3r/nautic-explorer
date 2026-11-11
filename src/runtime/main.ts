@@ -4,6 +4,8 @@ import { EquipmentSlot, EntityComponentTypes, system, world } from "@minecraft/s
 import { ActionFormData, CustomForm } from "@minecraft/server-ui";
 import { GUIDE_RECIPES, populateRecipeForm } from "../domain/guide";
 import { encodeHudStatus } from "../domain/hud";
+import { SwimProbe, horizontalSpeedBetween } from "../domain/swim-probe";
+import { multiplierForTier } from "../domain/flippers";
 import { MovementController } from "../domain/movement";
 import { renderStatus } from "../domain/status";
 import { TEXT_KEYS as K, translate } from "../domain/localization";
@@ -14,6 +16,8 @@ const BASIC_FLIPPERS_ID = "nautic:basic_flippers";
 const DIAMOND_FLIPPERS_ID = "nautic:diamond_flippers";
 const BREATH_TICKS = 6000;
 const movementController = new MovementController();
+const swimProbes = new Map();
+const swimHud = new Map();
 
 function getFlipperTier(player) {
   const equippable = player.getComponent(EntityComponentTypes.Equippable);
@@ -110,15 +114,71 @@ world.afterEvents.itemUse.subscribe(({ source, itemStack }) => {
   if (itemStack.typeId === GUIDE_ID) showGuide(source).catch(() => undefined);
 });
 
-world.afterEvents.playerLeave.subscribe(({ playerId }) => movementController.forget(playerId));
+world.afterEvents.playerLeave.subscribe(({ playerId }) => {
+  movementController.forget(playerId);
+  swimProbes.delete(playerId);
+  swimHud.delete(playerId);
+});
+
+// Developer-only diagnostic; /scriptevent requires operator permissions and cheats.
+system.afterEvents.scriptEventReceive.subscribe(({ id, message, sourceEntity: player }) => {
+  if (id !== "nautic:swim_probe" || player?.typeId !== "minecraft:player") return;
+  if (message === "stop") { swimProbes.delete(player.id); swimHud.delete(player.id); return; }
+  if (message === "hud") {
+    if (swimHud.has(player.id)) swimHud.delete(player.id);
+    else swimHud.set(player.id, undefined);
+    player.sendMessage("[Nautic probe] Live speed HUD " + (swimHud.has(player.id) ? "ON" : "OFF"));
+    return;
+  }
+  if (message !== "start") return;
+  swimHud.set(player.id, undefined);
+  swimProbes.set(player.id, { probe: new SwimProbe(), start: system.currentTick + 60, wallStart: undefined });
+  player.sendMessage("[Nautic probe 0.1.8] Starts in 3 seconds; swim straight for 10 seconds. Keep the same flippers and stay underwater. Result follows in chat.");
+});
 
 system.runInterval(() => {
-  for (const player of world.getPlayers()) updateFlipperSpeed(player);
+  for (const player of world.getPlayers()) {
+    const run = swimProbes.get(player.id);
+    const component = run ? player.getComponent("minecraft:movement") : undefined;
+    const beforeMovement = component?.currentValue;
+    updateFlipperSpeed(player);
+    if (!run || system.currentTick < run.start) continue;
+    try {
+      if (run.wallStart === undefined) run.wallStart = Date.now();
+      const state = movementController.inspect(player.id);
+      const tier = getFlipperTier(player);
+      run.probe.record({ tick: system.currentTick, position: { ...player.location }, dimension: player.dimension.id,
+        inWater: player.isInWater, swimming: player.isSwimming, sprinting: player.isSprinting,
+        tier, movement: component?.currentValue, beforeMovement,
+        target: state ? state.base * multiplierForTier(tier) : undefined,
+        effectiveMin: component?.effectiveMin, effectiveMax: component?.effectiveMax,
+        suspended: state?.suspended ?? false, setAccepted: state?.setAccepted });
+      if (system.currentTick >= run.start + 200) {
+        const report = { ...run.probe.result(), wallSeconds: (Date.now() - run.wallStart) / 1000 };
+        player.sendMessage("[Nautic probe 0.1.8] " + JSON.stringify(report));
+        swimProbes.delete(player.id);
+      }
+    } catch (error) {
+      swimProbes.delete(player.id);
+      player.sendMessage("[Nautic probe] Aborted: " + String(error));
+    }
+  }
 }, 1);
 
 system.runInterval(() => {
   for (const player of world.getPlayers()) {
     const status = statusText(player);
-    if (status) player.onScreenDisplay.setActionBar(encodeHudStatus(status));
+    if (swimHud.has(player.id)) {
+      const now = { tick: system.currentTick, position: { ...player.location }, dimension: player.dimension.id };
+      const previous = swimHud.get(player.id);
+      const speed = previous ? horizontalSpeedBetween(previous, now) : undefined;
+      swimHud.set(player.id, now);
+      const state = movementController.inspect(player.id);
+      const component = player.getComponent("minecraft:movement");
+      const target = state ? state.base * multiplierForTier(getFlipperTier(player)) : undefined;
+      const number = value => value === undefined ? "-" : value.toFixed(3);
+      const debug = `Speed ${speed === undefined ? "-" : speed.toFixed(2)} blocks/s (tick)\nSwim ${Number(player.isSwimming)} Sprint ${Number(player.isSprinting)} Paused ${Number(state?.suspended ?? false)}\nAttr ${number(component?.currentValue)} Target ${number(target)}`;
+      player.onScreenDisplay.setActionBar(encodeHudStatus({ rawtext: [{ text: debug + (status ? "\n" : "") }, ...(status?.rawtext ?? [])] }));
+    } else if (status) player.onScreenDisplay.setActionBar(encodeHudStatus(status));
   }
 }, 10);

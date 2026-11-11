@@ -27,3 +27,7 @@ Das Add-on hat keine externe Datenbank, keine Geheimnisse und keinen Serverdiens
 ## Laufzeitgrenzen
 
 Die Flossen ändern versuchsweise die Spieler-Komponente `minecraft:movement` nur im Wasser und stellen den Ausgangswert beim Verlassen des Wassers oder Ausziehen wieder her, sofern keine andere Änderung erkannt wurde. Normales Schwimmen und Sprintschwimmen, andere Effekte, Ausloggen und Landbewegung müssen vor Realm-Einsatz in einer echten Welt geprüft und gemessen werden; die tatsächlichen Prozentwerte sind nicht belegt. Die HUD-Position muss bei verschiedenen Bildschirmgrößen und gleichzeitigen Effekten geprüft werden.
+
+## Bewegungsdiagnose
+
+Nur für Entwicklertests in einer Weltkopie: `/scriptevent nautic:swim_probe hud` schaltet die Live-Messwerte ein/aus; `start` startet nach drei Sekunden einen zehnsekündigen Messlauf mit Chat-Ergebnis; `stop` beendet Lauf und Diagnose. Erfordert Cheats/Operatorrechte. Keine Einstellung für normale Spieler. Details und Grenzen: `docs/swim-speed-research.md`.

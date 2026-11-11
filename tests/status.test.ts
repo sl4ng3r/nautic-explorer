@@ -4,7 +4,7 @@ import { TEXT_KEYS } from '../src/domain/localization';
 describe('status bar', () => {
   it('sends translation keys and dynamic values for text mode', () => {
     expect(renderStatus({ mode: 'text', waterBreathingTicks: 6000, flipperTier: 'diamond', isInWater: true })).toEqual({ rawtext: [
-      { translate: TEXT_KEYS.waterBreathing }, { text: ' 5:00' }, { text: ' §8·§r ' }, { translate: TEXT_KEYS.flippers }, { text: ' +60%' },
+      { translate: TEXT_KEYS.waterBreathing }, { text: ' 5:00' }, { text: ' §8·§r ' }, { translate: TEXT_KEYS.flippers }, { text: ' +200%' },
     ] });
   });
   it('keeps symbols without translations in icon mode', () => {

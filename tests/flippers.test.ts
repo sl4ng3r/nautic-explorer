@@ -7,9 +7,9 @@ describe("flippers", () => {
     expect(tierForItemId("minecraft:leather_boots")).toBe("none");
   });
 
-  it("applies twenty and sixty percent underwater multipliers", () => {
+  it("applies twenty and two hundred percent underwater multipliers", () => {
     expect(multiplierForTier("basic")).toBeCloseTo(1.2);
-    expect(multiplierForTier("diamond")).toBeCloseTo(1.6);
-    expect(scaleWaterSpeed(0.1, "diamond")).toBeCloseTo(0.16);
+    expect(multiplierForTier("diamond")).toBeCloseTo(3);
+    expect(scaleWaterSpeed(0.1, "diamond")).toBeCloseTo(0.3);
   });
 });

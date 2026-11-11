@@ -7,7 +7,7 @@ describe('water movement controller', () => {
   it('applies the correct tier in water, switches tiers and restores on land', () => {
     const c = component(); const controller = new MovementController();
     controller.update('p', c, true, 'basic'); expect(c.currentValue).toBeCloseTo(0.12);
-    controller.update('p', c, true, 'diamond'); expect(c.currentValue).toBeCloseTo(0.16);
+    controller.update('p', c, true, 'diamond'); expect(c.currentValue).toBeCloseTo(0.3);
     controller.update('p', c, false, 'diamond'); expect(c.currentValue).toBeCloseTo(0.1);
   });
   it('restores when flippers are removed and does not boost without the component', () => {
