@@ -1,0 +1,15 @@
+{
+  "format_version": "1.21.30",
+  "minecraft:item": {
+    "description": { "identifier": "nautic:deep_breath_potion", "menu_category": { "category": "items" } },
+    "components": {
+      "minecraft:max_stack_size": 1,
+      "minecraft:icon": { "textures": { "default": "deep_breath_potion" } },
+      "minecraft:display_name": { "value": "item.nautic:deep_breath_potion" },
+      "minecraft:use_modifiers": { "use_duration": 1.6, "movement_modifier": 0.35 },
+      "minecraft:use_animation": "drink",
+      "minecraft:food": { "can_always_eat": true, "nutrition": 0, "saturation_modifier": 0, "using_converts_to": "minecraft:glass_bottle" },
+      "minecraft:custom_components": ["nautic:deep_breath_consume"]
+    }
+  }
+}

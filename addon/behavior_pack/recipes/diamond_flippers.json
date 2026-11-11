@@ -1,0 +1,15 @@
+{
+  "format_version": "1.20.10",
+  "minecraft:recipe_shapeless": {
+    "description": { "identifier": "nautic:diamond_flippers" },
+    "tags": ["crafting_table"],
+    "unlock": { "context": "AlwaysUnlocked" },
+    "ingredients": [
+      { "item": "nautic:basic_flippers", "count": 1 },
+      { "item": "minecraft:diamond_block", "count": 1 },
+      { "item": "minecraft:nautilus_shell", "count": 2 },
+      { "item": "minecraft:dried_kelp_block", "count": 2 }
+    ],
+    "result": { "item": "nautic:diamond_flippers", "count": 1 }
+  }
+}

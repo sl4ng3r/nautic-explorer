@@ -1,0 +1,11 @@
+{
+  "resource_pack_name": "nautic_explorer",
+  "texture_name": "atlas.items",
+  "texture_data": {
+    "flesh_bundle": { "textures": "textures/items/flesh_bundle" },
+    "deep_breath_potion": { "textures": "textures/items/deep_breath_potion" },
+    "basic_flippers": { "textures": "textures/items/basic_flippers" },
+    "diamond_flippers": { "textures": "textures/items/diamond_flippers" },
+    "explorer_guide": { "textures": "textures/items/explorer_guide" }
+  }
+}
