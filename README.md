@@ -14,7 +14,7 @@ npm run validate
 npm run package
 ```
 
-Danach liegt `release/nautic-explorer.mcaddon` vor. In Bedrock werden Behavior Pack und Resource Pack gemeinsam importiert und aktiviert. Das optionale Symbolpaket wird nur aktiviert, wenn die verwendete Welt keine kollidierende Schriftressource besitzt.
+Danach liegt `release/nautic-explorer.mcaddon` vor. Diese letzte gebaute Add-on-Version wird bewusst im Git-Repository mitgeführt. In Bedrock werden Behavior Pack und Resource Pack gemeinsam importiert und aktiviert. Das optionale Symbolpaket wird nur aktiviert, wenn die verwendete Welt keine kollidierende Schriftressource besitzt.
 
 ## Rezepte
 
