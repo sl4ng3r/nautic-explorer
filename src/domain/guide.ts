@@ -1,4 +1,3 @@
-import { multiplierForTier } from './flippers';
 import { TEXT_KEYS as K, translate, type Message } from './localization';
 
 export const GUIDE_RECIPES = [
@@ -7,11 +6,11 @@ export const GUIDE_RECIPES = [
     { item: 'minecraft:pufferfish', count: 2, name: K.pufferfish, icon: 'textures/guide/items/fish_pufferfish_raw.png' },
     { item: 'minecraft:glass_bottle', count: 1, name: K.bottle, icon: 'textures/guide/items/potion_bottle_empty.png' },
   ] },
-  { id: 'basic_flippers', title: translate(K.basicFlippers), effect: { translate: K.speedEffect, with: [String(Math.round((multiplierForTier('basic') - 1) * 100))] }, ingredients: [
+  { id: 'basic_flippers', title: translate(K.basicFlippers), effect: translate(K.speedEffect), ingredients: [
     { item: 'minecraft:dried_kelp_block', count: 3, name: K.kelpBlock, icon: 'textures/guide/blocks/dried_kelp_top.png' },
     { item: 'minecraft:leather', count: 6, name: K.leather, icon: 'textures/guide/items/leather.png' },
   ] },
-  { id: 'diamond_flippers', title: translate(K.diamondFlippers), effect: { translate: K.speedEffect, with: [String(Math.round((multiplierForTier('diamond') - 1) * 100))] }, ingredients: [
+  { id: 'diamond_flippers', title: translate(K.diamondFlippers), effect: translate(K.speedEffect), ingredients: [
     { item: 'nautic:basic_flippers', count: 1, name: K.basicFlippers, icon: 'textures/items/basic_flippers.png' },
     { item: 'minecraft:diamond_block', count: 1, name: K.diamondBlock, icon: 'textures/guide/blocks/diamond_block.png' },
     { item: 'minecraft:nautilus_shell', count: 2, name: K.shell, icon: 'textures/guide/items/nautilus.png' },

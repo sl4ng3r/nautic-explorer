@@ -11,10 +11,9 @@ describe('localization', () => {
       for (const key of Object.values(TEXT_KEYS)) expect(translations[key], `${locale}: ${key}`).toBeTruthy();
     }
   });
-  it('keeps speed and quantity placeholders in both languages', () => {
+  it('keeps quantity placeholders in both languages', () => {
     for (const locale of ['en_US', 'de_DE']) {
       const translations = lang(locale);
-      expect(translations[TEXT_KEYS.speedEffect]).toContain('%%1');
       expect(translations[TEXT_KEYS.quantity]).toContain('%%1');
       expect(translations[TEXT_KEYS.quantity]).toContain('%%2');
     }

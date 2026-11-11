@@ -1,38 +1,19 @@
-import { multiplierForTier, type FlipperTier } from './flippers';
+import type { FlipperTier } from './flippers';
 
-type MovementComponent = { readonly currentValue: number; setCurrentValue(value: number): unknown };
-type State = { base: number; applied: number; suspended: boolean; setAccepted?: boolean };
-const same = (a: number, b: number) => Math.abs(a - b) < 0.000001;
+type Vec3 = { x: number; y: number; z: number };
+type SwimInput = { inWater: boolean; tier: FlipperTier; forward: number; view: Vec3; velocity: Vec3; isRiding: boolean };
 
-export class MovementController {
-  private states = new Map<string, State>();
+// Experimental forces, not calibrated speed multipliers. Runs once per five ticks.
+const FORCES = { basic: 0.015, diamond: 0.045 } as const;
+const VELOCITY_CAP = 0.4;
 
-  update(id: string, component: MovementComponent | undefined, inWater: boolean, tier: FlipperTier): void {
-    if (!component) { this.states.delete(id); return; }
-    const active = inWater && tier !== 'none';
-    let state = this.states.get(id);
-    if (!active) {
-      if (state && !state.suspended && same(component.currentValue, state.applied)) component.setCurrentValue(state.base);
-      this.states.delete(id);
-      return;
-    }
-    if (!state) {
-      state = { base: component.currentValue, applied: component.currentValue, suspended: false };
-      this.states.set(id, state);
-    } else if (!same(component.currentValue, state.applied)) {
-      state.suspended = true;
-    }
-    if (state.suspended) return;
-    const target = state.base * multiplierForTier(tier);
-    if (!same(component.currentValue, target)) {
-      const accepted = component.setCurrentValue(target);
-      state.setAccepted = typeof accepted === 'boolean' ? accepted : undefined;
-    }
-    state.applied = component.currentValue;
-  }
-  inspect(id: string) {
-    const state = this.states.get(id);
-    return state ? { ...state } : undefined;
-  }
-  forget(id: string): void { this.states.delete(id); }
+export function swimImpulse(input: SwimInput): Vec3 | undefined {
+  if (!input.inWater || input.tier === 'none' || input.isRiding || !(input.forward > 0.1)) return undefined;
+  const { view, velocity } = input;
+  if (![input.forward, view.x, view.y, view.z, velocity.x, velocity.y, velocity.z].every(Number.isFinite)) return undefined;
+  const viewLength = Math.hypot(view.x, view.y, view.z);
+  const speed = Math.hypot(velocity.x, velocity.y, velocity.z);
+  if (viewLength < 0.001 || speed >= VELOCITY_CAP) return undefined;
+  const strength = Math.min(FORCES[input.tier] * Math.min(input.forward, 1), VELOCITY_CAP - speed);
+  return { x: view.x / viewLength * strength, y: view.y / viewLength * strength, z: view.z / viewLength * strength };
 }

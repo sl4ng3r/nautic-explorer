@@ -1,6 +1,6 @@
 # Nautic Explorer
 
-Minecraft Bedrock Add-on für Unterwassererkundung. Das Projekt erzeugt ein Behavior Pack, ein Resource Pack und ein optionales Symbolpaket für die Actionbar.
+Minecraft Bedrock Add-on für Unterwassererkundung. Das Projekt erzeugt ein Behavior Pack, ein Resource Pack und ein mitverknüpftes Symbolpaket für die Actionbar.
 
 ## Befehle
 
@@ -18,15 +18,15 @@ Minecraft Bedrock Add-on für Unterwassererkundung. Das Projekt erzeugt ein Beha
 - `src/runtime/main.ts` enthält die Bedrock-Laufzeitintegration.
 - `addon/behavior_pack/` enthält Items, Rezepte und das Packmanifest.
 - `addon/resource_pack/` enthält Texturen, Übersetzungen, Modelle und Attachables.
-- `addon/optional_symbols/` enthält die separat aktivierbaren Statussymbole.
+- `addon/optional_symbols/` enthält die mit dem Add-on gemeinsam angeforderten Statussymbole.
 
 ## Datenhaltung und Deployment
 
-Das Add-on hat keine externe Datenbank, keine Geheimnisse und keinen Serverdienst. Die individuelle Statusanzeige wird als Spieler-Tag gespeichert. Import erfolgt über die erzeugte `.mcaddon`-Datei; das optionale Symbolpaket kann bei Konflikten deaktiviert werden. Eine Docker-Compose- oder Deploy-Cockpit-Installation ist für den ausdrücklich gewählten Welt-/Realm-Betrieb nicht erforderlich.
+Das Add-on hat keine externe Datenbank, keine Geheimnisse und keinen Serverdienst. Die individuelle Statusanzeige wird als Spieler-Tag gespeichert. Import erfolgt über die erzeugte `.mcaddon`-Datei; alle drei Packs sind durch gegenseitige Manifest-Abhängigkeiten verbunden (Behavior benötigt beide Ressourcenpakete, diese benötigen Behavior). Symbols ist verpflichtend; die automatische Aktivierung muss über jeden Einstiegspunkt im Spiel geprüft werden. Eine Docker-Compose- oder Deploy-Cockpit-Installation ist für den ausdrücklich gewählten Welt-/Realm-Betrieb nicht erforderlich.
 
 ## Laufzeitgrenzen
 
-Die Flossen ändern versuchsweise die Spieler-Komponente `minecraft:movement` nur im Wasser und stellen den Ausgangswert beim Verlassen des Wassers oder Ausziehen wieder her, sofern keine andere Änderung erkannt wurde. Normales Schwimmen und Sprintschwimmen, andere Effekte, Ausloggen und Landbewegung müssen vor Realm-Einsatz in einer echten Welt geprüft und gemessen werden; die tatsächlichen Prozentwerte sind nicht belegt. Die HUD-Position muss bei verschiedenen Bildschirmgrößen und gleichzeitigen Effekten geprüft werden.
+Die Flossen geben versuchsweise alle fünf Ticks einen begrenzten Impuls bei Vorwärtseingabe im Wasser; dabei wird `minecraft:movement` nicht verändert. Die Kräfte sind nicht als Prozentwerte kalibriert. Normales Schwimmen und Sprintschwimmen, andere Effekte, Ausloggen und Landbewegung müssen vor Realm-Einsatz in einer echten Welt geprüft und gemessen werden; die tatsächlichen Prozentwerte sind nicht belegt. Die HUD-Position muss bei verschiedenen Bildschirmgrößen und gleichzeitigen Effekten geprüft werden.
 
 ## Bewegungsdiagnose
 

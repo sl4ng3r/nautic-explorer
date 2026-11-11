@@ -2,8 +2,7 @@ import type { FlipperTier } from './flippers';
 export type SwimSample = {
   tick: number; position: { x: number; y: number; z: number }; dimension: string;
   inWater: boolean; swimming: boolean; sprinting: boolean; movement?: number;
-  tier: FlipperTier; suspended: boolean;
-  beforeMovement?: number; target?: number; effectiveMin?: number; effectiveMax?: number; setAccepted?: boolean;
+  tier: FlipperTier; boostActive?: boolean; boostError?: boolean;
 };
 
 // Only holds the bounded ten-second diagnostic run, never an ongoing history.
@@ -22,7 +21,8 @@ export class SwimProbe {
     const heights = this.samples.map(s => s.position.y);
     return {
       elapsedTicks, horizontalSpeed: elapsedTicks > 0 ? distance / (elapsedTicks / 20) : 0,
-      suspendedSamples: this.samples.filter(s => s.suspended).length,
+      boostActiveSamples: this.samples.filter(s => s.boostActive).length,
+      boostErrorSamples: this.samples.filter(s => s.boostError).length,
       swimmingSamples: this.samples.filter(s => s.swimming).length,
       sprintingSamples: this.samples.filter(s => s.sprinting).length,
       sampleCount: this.samples.length,

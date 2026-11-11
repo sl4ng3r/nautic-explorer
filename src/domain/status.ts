@@ -1,5 +1,5 @@
 import { formatRemainingTime } from './potion';
-import { type FlipperTier, multiplierForTier } from './flippers';
+import type { FlipperTier } from './flippers';
 import { TEXT_KEYS as K, translate, type Message } from './localization';
 
 export type StatusMode = 'icons' | 'text' | 'off';
@@ -13,9 +13,7 @@ export function renderStatus(input: StatusInput): { rawtext: Message[] } | undef
   }
   if (input.isInWater && input.flipperTier !== 'none') {
     if (parts.length) parts.push({ text: ' §8·§r ' });
-    const percent = Math.round((multiplierForTier(input.flipperTier) - 1) * 100);
     parts.push(input.mode === 'icons' ? { text: '≋' } : translate(K.flippers));
-    parts.push({ text: ` +${percent}%` });
   }
   return parts.length ? { rawtext: parts } : undefined;
 }

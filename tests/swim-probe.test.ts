@@ -1,15 +1,15 @@
 import { SwimProbe } from '../src/domain/swim-probe';
 
 describe('swim probe', () => {
-  const sample = (tick: number, x: number, extra = {}) => ({ tick, position: { x, y: 10, z: 0 }, dimension: 'overworld', inWater: true, swimming: true, sprinting: true, movement: 0.3, tier: 'diamond' as const, suspended: false, ...extra });
-  it('measures displacement per simulation second and reports controller suspension', () => {
+  const sample = (tick: number, x: number, extra = {}) => ({ tick, position: { x, y: 10, z: 0 }, dimension: 'overworld', inWater: true, swimming: true, sprinting: true, movement: 0.3, tier: 'diamond' as const, boostActive: false, ...extra });
+  it('measures displacement per simulation second and reports active boost samples', () => {
     const probe = new SwimProbe();
     probe.record(sample(100, 0));
-    probe.record(sample(200, 20, { suspended: true }));
+    probe.record(sample(200, 20, { boostActive: true }));
     const result = probe.result();
     expect(result.horizontalSpeed).toBeCloseTo(4);
     expect(result.elapsedTicks).toBe(100);
-    expect(result.suspendedSamples).toBe(1);
+    expect(result.boostActiveSamples).toBe(1);
     expect(result.swimmingSamples).toBe(2);
     expect(result.movementMin).toBe(0.3);
   });

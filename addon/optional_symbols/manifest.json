@@ -2,18 +2,19 @@
   "format_version": 2,
   "header": {
     "name": "Nautic Explorer Symbols",
-    "description": "Optionale Statussymbole für die Actionbar",
+    "description": "Statussymbole für Nautic Explorer; gemeinsam mit Behavior und Resources aktivieren",
     "uuid": "c9bc42fa-1eb3-47df-b9cf-7409f21f80b5",
     "version": [
       0,
       1,
-      8
+      10
     ],
     "min_engine_version": [
       1,
       21,
       70
-    ]
+    ],
+    "pack_scope": "world"
   },
   "modules": [
     {
@@ -22,7 +23,17 @@
       "version": [
         0,
         1,
-        8
+        10
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "uuid": "3e1dfaa9-8fc0-4e7e-8bbd-cf4e7a7f4d24",
+      "version": [
+        0,
+        1,
+        10
       ]
     }
   ]

@@ -1,30 +1,32 @@
-import { MovementController } from '../src/domain/movement';
+import { swimImpulse } from '../src/domain/movement';
 
-function component(value = 0.1) {
-  return { currentValue: value, setCurrentValue(next: number) { this.currentValue = next; } };
-}
-describe('water movement controller', () => {
-  it('applies the correct tier in water, switches tiers and restores on land', () => {
-    const c = component(); const controller = new MovementController();
-    controller.update('p', c, true, 'basic'); expect(c.currentValue).toBeCloseTo(0.12);
-    controller.update('p', c, true, 'diamond'); expect(c.currentValue).toBeCloseTo(0.3);
-    controller.update('p', c, false, 'diamond'); expect(c.currentValue).toBeCloseTo(0.1);
+const swimming = { inWater: true, tier: 'basic' as const, forward: 1, view: { x: 0, y: 0, z: 1 }, velocity: { x: 0, y: 0, z: 0 }, isRiding: false };
+describe('experimental swim propulsion', () => {
+  it('applies smaller finite impulses to basic than diamond flippers', () => {
+    const basic = swimImpulse(swimming)!;
+    const diamond = swimImpulse({ ...swimming, tier: 'diamond' })!;
+    expect(basic.z).toBeGreaterThan(0);
+    expect(diamond.z).toBeGreaterThan(basic.z);
+    expect(diamond.z).toBeLessThanOrEqual(0.05);
   });
-  it('restores when flippers are removed and does not boost without the component', () => {
-    const c = component(); const controller = new MovementController();
-    controller.update('p', c, true, 'diamond'); controller.update('p', c, true, 'none');
-    expect(c.currentValue).toBeCloseTo(0.1);
-    expect(() => controller.update('q', undefined, true, 'basic')).not.toThrow();
+  it('never propels without flippers, outside water, without forward input or while riding', () => {
+    for (const override of [{ tier: 'none' as const }, { inWater: false }, { forward: 0 }, { forward: -1 }, { isRiding: true }]) expect(swimImpulse({ ...swimming, ...override })).toBeUndefined();
   });
-  it('does not overwrite an externally changed value when stopping', () => {
-    const c = component(); const controller = new MovementController();
-    controller.update('p', c, true, 'basic'); c.currentValue = 0.3;
-    controller.update('p', c, false, 'none'); expect(c.currentValue).toBeCloseTo(0.3);
+  it('uses the look direction, including vertical swimming', () => {
+    const upward = swimImpulse({ ...swimming, view: { x: 0, y: 1, z: 0 } })!;
+    expect(upward.y).toBeGreaterThan(0);
+    expect(upward.z).toBe(0);
+    const downward = swimImpulse({ ...swimming, view: { x: 0, y: -1, z: 0 } })!;
+    expect(downward.y).toBeLessThan(0);
   });
-  it('leaves an externally changed value untouched while active', () => {
-    const c = component(); const controller = new MovementController();
-    controller.update('p', c, true, 'basic'); c.currentValue = 0.2;
-    controller.update('p', c, true, 'basic'); expect(c.currentValue).toBeCloseTo(0.2);
-    controller.update('p', c, false, 'none'); expect(c.currentValue).toBeCloseTo(0.2);
+  it('does not boost high existing velocity or invalid vectors', () => {
+    expect(swimImpulse({ ...swimming, velocity: { x: 1, y: 0, z: 0 } })).toBeUndefined();
+    expect(swimImpulse({ ...swimming, view: { x: NaN, y: 0, z: 1 } })).toBeUndefined();
+    expect(swimImpulse({ ...swimming, view: { x: 0, y: 0, z: 0 } })).toBeUndefined();
+    expect(swimImpulse({ ...swimming, velocity: { x: 0, y: 0, z: Infinity } })).toBeUndefined();
+  });
+  it('limits the force near the speed cap rather than compounding velocity', () => {
+    const force = swimImpulse({ ...swimming, tier: 'diamond', velocity: { x: 0, y: 0, z: 0.395 } })!;
+    expect(force.z).toBeLessThanOrEqual(0.005001);
   });
 });

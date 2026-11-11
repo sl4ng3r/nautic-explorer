@@ -18,8 +18,8 @@ describe('recipe guide', () => {
     expect(calls.some(c => c[0] === 'button')).toBe(false);
     for (const recipe of GUIDE_RECIPES) for (const ingredient of recipe.ingredients) expect(existsSync(`addon/resource_pack/${ingredient.icon}`)).toBe(true);
   });
-  it('passes the configured flipper percentages to translations', () => {
-    expect(GUIDE_RECIPES[1].effect).toEqual({ translate: TEXT_KEYS.speedEffect, with: ['20'] });
-    expect(GUIDE_RECIPES[2].effect).toEqual({ translate: TEXT_KEYS.speedEffect, with: ['200'] });
+  it('describes the experimental boost without claiming an unmeasured percentage', () => {
+    expect(GUIDE_RECIPES[1].effect).toEqual({ translate: TEXT_KEYS.speedEffect });
+    expect(GUIDE_RECIPES[2].effect).toEqual({ translate: TEXT_KEYS.speedEffect });
   });
 });

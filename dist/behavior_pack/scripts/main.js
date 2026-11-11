@@ -2,15 +2,6 @@
 import { EquipmentSlot, EntityComponentTypes, system, world } from "@minecraft/server";
 import { ActionFormData, CustomForm } from "@minecraft/server-ui";
 
-// src/domain/flippers.ts
-var BASIC_FLIPPER_MULTIPLIER = 1.2;
-var DIAMOND_FLIPPER_MULTIPLIER = 3;
-function multiplierForTier(tier) {
-  if (tier === "diamond") return DIAMOND_FLIPPER_MULTIPLIER;
-  if (tier === "basic") return BASIC_FLIPPER_MULTIPLIER;
-  return 1;
-}
-
 // src/domain/localization.ts
 var TEXT_KEYS = {
   fleshBundle: "item.nautic:flesh_bundle",
@@ -52,11 +43,11 @@ var GUIDE_RECIPES = [
     { item: "minecraft:pufferfish", count: 2, name: TEXT_KEYS.pufferfish, icon: "textures/guide/items/fish_pufferfish_raw.png" },
     { item: "minecraft:glass_bottle", count: 1, name: TEXT_KEYS.bottle, icon: "textures/guide/items/potion_bottle_empty.png" }
   ] },
-  { id: "basic_flippers", title: translate(TEXT_KEYS.basicFlippers), effect: { translate: TEXT_KEYS.speedEffect, with: [String(Math.round((multiplierForTier("basic") - 1) * 100))] }, ingredients: [
+  { id: "basic_flippers", title: translate(TEXT_KEYS.basicFlippers), effect: translate(TEXT_KEYS.speedEffect), ingredients: [
     { item: "minecraft:dried_kelp_block", count: 3, name: TEXT_KEYS.kelpBlock, icon: "textures/guide/blocks/dried_kelp_top.png" },
     { item: "minecraft:leather", count: 6, name: TEXT_KEYS.leather, icon: "textures/guide/items/leather.png" }
   ] },
-  { id: "diamond_flippers", title: translate(TEXT_KEYS.diamondFlippers), effect: { translate: TEXT_KEYS.speedEffect, with: [String(Math.round((multiplierForTier("diamond") - 1) * 100))] }, ingredients: [
+  { id: "diamond_flippers", title: translate(TEXT_KEYS.diamondFlippers), effect: translate(TEXT_KEYS.speedEffect), ingredients: [
     { item: "nautic:basic_flippers", count: 1, name: TEXT_KEYS.basicFlippers, icon: "textures/items/basic_flippers.png" },
     { item: "minecraft:diamond_block", count: 1, name: TEXT_KEYS.diamondBlock, icon: "textures/guide/blocks/diamond_block.png" },
     { item: "minecraft:nautilus_shell", count: 2, name: TEXT_KEYS.shell, icon: "textures/guide/items/nautilus.png" },
@@ -104,7 +95,8 @@ var SwimProbe = class {
     return {
       elapsedTicks,
       horizontalSpeed: elapsedTicks > 0 ? distance / (elapsedTicks / 20) : 0,
-      suspendedSamples: this.samples.filter((s) => s.suspended).length,
+      boostActiveSamples: this.samples.filter((s) => s.boostActive).length,
+      boostErrorSamples: this.samples.filter((s) => s.boostError).length,
       swimmingSamples: this.samples.filter((s) => s.swimming).length,
       sprintingSamples: this.samples.filter((s) => s.sprinting).length,
       sampleCount: this.samples.length,
@@ -125,43 +117,18 @@ function horizontalSpeedBetween(a, b) {
 }
 
 // src/domain/movement.ts
-var same = (a, b) => Math.abs(a - b) < 1e-6;
-var MovementController = class {
-  states = /* @__PURE__ */ new Map();
-  update(id, component, inWater, tier) {
-    if (!component) {
-      this.states.delete(id);
-      return;
-    }
-    const active = inWater && tier !== "none";
-    let state = this.states.get(id);
-    if (!active) {
-      if (state && !state.suspended && same(component.currentValue, state.applied)) component.setCurrentValue(state.base);
-      this.states.delete(id);
-      return;
-    }
-    if (!state) {
-      state = { base: component.currentValue, applied: component.currentValue, suspended: false };
-      this.states.set(id, state);
-    } else if (!same(component.currentValue, state.applied)) {
-      state.suspended = true;
-    }
-    if (state.suspended) return;
-    const target = state.base * multiplierForTier(tier);
-    if (!same(component.currentValue, target)) {
-      const accepted = component.setCurrentValue(target);
-      state.setAccepted = typeof accepted === "boolean" ? accepted : void 0;
-    }
-    state.applied = component.currentValue;
-  }
-  inspect(id) {
-    const state = this.states.get(id);
-    return state ? { ...state } : void 0;
-  }
-  forget(id) {
-    this.states.delete(id);
-  }
-};
+var FORCES = { basic: 0.015, diamond: 0.045 };
+var VELOCITY_CAP = 0.4;
+function swimImpulse(input) {
+  if (!input.inWater || input.tier === "none" || input.isRiding || !(input.forward > 0.1)) return void 0;
+  const { view, velocity } = input;
+  if (![input.forward, view.x, view.y, view.z, velocity.x, velocity.y, velocity.z].every(Number.isFinite)) return void 0;
+  const viewLength = Math.hypot(view.x, view.y, view.z);
+  const speed = Math.hypot(velocity.x, velocity.y, velocity.z);
+  if (viewLength < 1e-3 || speed >= VELOCITY_CAP) return void 0;
+  const strength = Math.min(FORCES[input.tier] * Math.min(input.forward, 1), VELOCITY_CAP - speed);
+  return { x: view.x / viewLength * strength, y: view.y / viewLength * strength, z: view.z / viewLength * strength };
+}
 
 // src/domain/potion.ts
 var WATER_BREATHING_DURATION_TICKS = 5 * 60 * 20;
@@ -182,9 +149,7 @@ function renderStatus(input) {
   }
   if (input.isInWater && input.flipperTier !== "none") {
     if (parts.length) parts.push({ text: " \xA78\xB7\xA7r " });
-    const percent = Math.round((multiplierForTier(input.flipperTier) - 1) * 100);
     parts.push(input.mode === "icons" ? { text: "\u224B" } : translate(TEXT_KEYS.flippers));
-    parts.push({ text: ` +${percent}%` });
   }
   return parts.length ? { rawtext: parts } : void 0;
 }
@@ -194,7 +159,7 @@ var GUIDE_ID = "nautic:explorer_guide";
 var BASIC_FLIPPERS_ID = "nautic:basic_flippers";
 var DIAMOND_FLIPPERS_ID = "nautic:diamond_flippers";
 var BREATH_TICKS = 6e3;
-var movementController = new MovementController();
+var impulseDiagnostics = /* @__PURE__ */ new Map();
 var swimProbes = /* @__PURE__ */ new Map();
 var swimHud = /* @__PURE__ */ new Map();
 function getFlipperTier(player) {
@@ -233,7 +198,32 @@ function applyPotion(player) {
   });
 }
 function updateFlipperSpeed(player) {
-  movementController.update(player.id, player.getComponent("minecraft:movement"), player.isInWater, getFlipperTier(player));
+  if (system.currentTick % 5 !== 0 || impulseDiagnostics.get(player.id)?.error) return;
+  try {
+    const tier = getFlipperTier(player);
+    if (!player.isInWater || tier === "none") {
+      impulseDiagnostics.set(player.id, { active: false });
+      return;
+    }
+    const impulse = swimImpulse({
+      inWater: true,
+      tier,
+      forward: player.inputInfo.getMovementVector().y,
+      view: player.getViewDirection(),
+      velocity: player.getVelocity(),
+      isRiding: !!player.getComponent("minecraft:riding")?.entityRidingOn
+    });
+    if (!impulse) {
+      impulseDiagnostics.set(player.id, { active: false });
+      return;
+    }
+    player.applyKnockback({ x: impulse.x, z: impulse.z }, impulse.y);
+    impulseDiagnostics.set(player.id, { active: true });
+  } catch (error) {
+    impulseDiagnostics.set(player.id, { active: false, error: String(error) });
+    player.sendMessage("Nautic Explorer: swim boost unavailable for this session.");
+    console.warn(`Nautic Explorer swim boost: ${String(error)}`);
+  }
 }
 async function showGuide(player) {
   const form = new ActionFormData().title("Nautic Explorer").body(translate(TEXT_KEYS.intro)).button(translate(TEXT_KEYS.potion), "textures/items/deep_breath_potion").button(translate(TEXT_KEYS.basicFlippers), "textures/items/basic_flippers").button(translate(TEXT_KEYS.diamondFlippers), "textures/items/diamond_flippers").button(translate(TEXT_KEYS.fleshBundle), "textures/items/flesh_bundle").button(translate(TEXT_KEYS.settings));
@@ -273,7 +263,7 @@ world.afterEvents.itemUse.subscribe(({ source, itemStack }) => {
   if (itemStack.typeId === GUIDE_ID) showGuide(source).catch(() => void 0);
 });
 world.afterEvents.playerLeave.subscribe(({ playerId }) => {
-  movementController.forget(playerId);
+  impulseDiagnostics.delete(playerId);
   swimProbes.delete(playerId);
   swimHud.delete(playerId);
 });
@@ -293,18 +283,17 @@ system.afterEvents.scriptEventReceive.subscribe(({ id, message, sourceEntity: pl
   if (message !== "start") return;
   swimHud.set(player.id, void 0);
   swimProbes.set(player.id, { probe: new SwimProbe(), start: system.currentTick + 60, wallStart: void 0 });
-  player.sendMessage("[Nautic probe 0.1.8] Starts in 3 seconds; swim straight for 10 seconds. Keep the same flippers and stay underwater. Result follows in chat.");
+  player.sendMessage("[Nautic probe 0.1.10] Starts in 3 seconds; swim straight for 10 seconds. Keep the same flippers and stay underwater. Result follows in chat.");
 });
 system.runInterval(() => {
   for (const player of world.getPlayers()) {
     const run = swimProbes.get(player.id);
     const component = run ? player.getComponent("minecraft:movement") : void 0;
-    const beforeMovement = component?.currentValue;
     updateFlipperSpeed(player);
     if (!run || system.currentTick < run.start) continue;
     try {
       if (run.wallStart === void 0) run.wallStart = Date.now();
-      const state = movementController.inspect(player.id);
+      const state = impulseDiagnostics.get(player.id);
       const tier = getFlipperTier(player);
       run.probe.record({
         tick: system.currentTick,
@@ -315,16 +304,12 @@ system.runInterval(() => {
         sprinting: player.isSprinting,
         tier,
         movement: component?.currentValue,
-        beforeMovement,
-        target: state ? state.base * multiplierForTier(tier) : void 0,
-        effectiveMin: component?.effectiveMin,
-        effectiveMax: component?.effectiveMax,
-        suspended: state?.suspended ?? false,
-        setAccepted: state?.setAccepted
+        boostActive: state?.active ?? false,
+        boostError: !!state?.error
       });
       if (system.currentTick >= run.start + 200) {
         const report = { ...run.probe.result(), wallSeconds: (Date.now() - run.wallStart) / 1e3 };
-        player.sendMessage("[Nautic probe 0.1.8] " + JSON.stringify(report));
+        player.sendMessage("[Nautic probe 0.1.10] " + JSON.stringify(report));
         swimProbes.delete(player.id);
       }
     } catch (error) {
@@ -341,13 +326,12 @@ system.runInterval(() => {
       const previous = swimHud.get(player.id);
       const speed = previous ? horizontalSpeedBetween(previous, now) : void 0;
       swimHud.set(player.id, now);
-      const state = movementController.inspect(player.id);
+      const state = impulseDiagnostics.get(player.id);
       const component = player.getComponent("minecraft:movement");
-      const target = state ? state.base * multiplierForTier(getFlipperTier(player)) : void 0;
       const number = (value) => value === void 0 ? "-" : value.toFixed(3);
       const debug = `Speed ${speed === void 0 ? "-" : speed.toFixed(2)} blocks/s (tick)
-Swim ${Number(player.isSwimming)} Sprint ${Number(player.isSprinting)} Paused ${Number(state?.suspended ?? false)}
-Attr ${number(component?.currentValue)} Target ${number(target)}`;
+Swim ${Number(player.isSwimming)} Sprint ${Number(player.isSprinting)} Boost ${Number(state?.active ?? false)}
+Attr ${number(component?.currentValue)} Error ${Number(!!state?.error)}`;
       player.onScreenDisplay.setActionBar(encodeHudStatus({ rawtext: [{ text: debug + (status ? "\n" : "") }, ...status?.rawtext ?? []] }));
     } else if (status) player.onScreenDisplay.setActionBar(encodeHudStatus(status));
   }

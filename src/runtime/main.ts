@@ -5,8 +5,7 @@ import { ActionFormData, CustomForm } from "@minecraft/server-ui";
 import { GUIDE_RECIPES, populateRecipeForm } from "../domain/guide";
 import { encodeHudStatus } from "../domain/hud";
 import { SwimProbe, horizontalSpeedBetween } from "../domain/swim-probe";
-import { multiplierForTier } from "../domain/flippers";
-import { MovementController } from "../domain/movement";
+import { swimImpulse } from "../domain/movement";
 import { renderStatus } from "../domain/status";
 import { TEXT_KEYS as K, translate } from "../domain/localization";
 
@@ -15,7 +14,7 @@ const GUIDE_ID = "nautic:explorer_guide";
 const BASIC_FLIPPERS_ID = "nautic:basic_flippers";
 const DIAMOND_FLIPPERS_ID = "nautic:diamond_flippers";
 const BREATH_TICKS = 6000;
-const movementController = new MovementController();
+const impulseDiagnostics = new Map();
 const swimProbes = new Map();
 const swimHud = new Map();
 
@@ -60,7 +59,27 @@ function applyPotion(player) {
 }
 
 function updateFlipperSpeed(player) {
-  movementController.update(player.id, player.getComponent("minecraft:movement"), player.isInWater, getFlipperTier(player));
+  if (system.currentTick % 5 !== 0 || impulseDiagnostics.get(player.id)?.error) return;
+  try {
+    const tier = getFlipperTier(player);
+    if (!player.isInWater || tier === "none") {
+      impulseDiagnostics.set(player.id, { active: false });
+      return;
+    }
+    const impulse = swimImpulse({
+      inWater: true, tier,
+      forward: player.inputInfo.getMovementVector().y,
+      view: player.getViewDirection(), velocity: player.getVelocity(),
+      isRiding: !!player.getComponent("minecraft:riding")?.entityRidingOn,
+    });
+    if (!impulse) { impulseDiagnostics.set(player.id, { active: false }); return; }
+    player.applyKnockback({ x: impulse.x, z: impulse.z }, impulse.y);
+    impulseDiagnostics.set(player.id, { active: true });
+  } catch (error) {
+    impulseDiagnostics.set(player.id, { active: false, error: String(error) });
+    player.sendMessage("Nautic Explorer: swim boost unavailable for this session.");
+    console.warn(`Nautic Explorer swim boost: ${String(error)}`);
+  }
 }
 
 async function showGuide(player) {
@@ -115,7 +134,7 @@ world.afterEvents.itemUse.subscribe(({ source, itemStack }) => {
 });
 
 world.afterEvents.playerLeave.subscribe(({ playerId }) => {
-  movementController.forget(playerId);
+  impulseDiagnostics.delete(playerId);
   swimProbes.delete(playerId);
   swimHud.delete(playerId);
 });
@@ -133,29 +152,26 @@ system.afterEvents.scriptEventReceive.subscribe(({ id, message, sourceEntity: pl
   if (message !== "start") return;
   swimHud.set(player.id, undefined);
   swimProbes.set(player.id, { probe: new SwimProbe(), start: system.currentTick + 60, wallStart: undefined });
-  player.sendMessage("[Nautic probe 0.1.8] Starts in 3 seconds; swim straight for 10 seconds. Keep the same flippers and stay underwater. Result follows in chat.");
+  player.sendMessage("[Nautic probe 0.1.10] Starts in 3 seconds; swim straight for 10 seconds. Keep the same flippers and stay underwater. Result follows in chat.");
 });
 
 system.runInterval(() => {
   for (const player of world.getPlayers()) {
     const run = swimProbes.get(player.id);
     const component = run ? player.getComponent("minecraft:movement") : undefined;
-    const beforeMovement = component?.currentValue;
     updateFlipperSpeed(player);
     if (!run || system.currentTick < run.start) continue;
     try {
       if (run.wallStart === undefined) run.wallStart = Date.now();
-      const state = movementController.inspect(player.id);
+      const state = impulseDiagnostics.get(player.id);
       const tier = getFlipperTier(player);
       run.probe.record({ tick: system.currentTick, position: { ...player.location }, dimension: player.dimension.id,
         inWater: player.isInWater, swimming: player.isSwimming, sprinting: player.isSprinting,
-        tier, movement: component?.currentValue, beforeMovement,
-        target: state ? state.base * multiplierForTier(tier) : undefined,
-        effectiveMin: component?.effectiveMin, effectiveMax: component?.effectiveMax,
-        suspended: state?.suspended ?? false, setAccepted: state?.setAccepted });
+        tier, movement: component?.currentValue,
+        boostActive: state?.active ?? false, boostError: !!state?.error });
       if (system.currentTick >= run.start + 200) {
         const report = { ...run.probe.result(), wallSeconds: (Date.now() - run.wallStart) / 1000 };
-        player.sendMessage("[Nautic probe 0.1.8] " + JSON.stringify(report));
+        player.sendMessage("[Nautic probe 0.1.10] " + JSON.stringify(report));
         swimProbes.delete(player.id);
       }
     } catch (error) {
@@ -173,11 +189,10 @@ system.runInterval(() => {
       const previous = swimHud.get(player.id);
       const speed = previous ? horizontalSpeedBetween(previous, now) : undefined;
       swimHud.set(player.id, now);
-      const state = movementController.inspect(player.id);
+      const state = impulseDiagnostics.get(player.id);
       const component = player.getComponent("minecraft:movement");
-      const target = state ? state.base * multiplierForTier(getFlipperTier(player)) : undefined;
       const number = value => value === undefined ? "-" : value.toFixed(3);
-      const debug = `Speed ${speed === undefined ? "-" : speed.toFixed(2)} blocks/s (tick)\nSwim ${Number(player.isSwimming)} Sprint ${Number(player.isSprinting)} Paused ${Number(state?.suspended ?? false)}\nAttr ${number(component?.currentValue)} Target ${number(target)}`;
+      const debug = `Speed ${speed === undefined ? "-" : speed.toFixed(2)} blocks/s (tick)\nSwim ${Number(player.isSwimming)} Sprint ${Number(player.isSprinting)} Boost ${Number(state?.active ?? false)}\nAttr ${number(component?.currentValue)} Error ${Number(!!state?.error)}`;
       player.onScreenDisplay.setActionBar(encodeHudStatus({ rawtext: [{ text: debug + (status ? "\n" : "") }, ...(status?.rawtext ?? [])] }));
     } else if (status) player.onScreenDisplay.setActionBar(encodeHudStatus(status));
   }
