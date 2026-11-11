@@ -1,0 +1,12 @@
+{
+  "format_version": "1.20.10",
+  "minecraft:recipe_shapeless": {
+    "description": { "identifier": "nautic:flesh_bundle_unpack" },
+    "tags": ["crafting_table"],
+    "unlock": { "context": "AlwaysUnlocked" },
+    "ingredients": [
+      { "item": "nautic:flesh_bundle", "count": 1 }
+    ],
+    "result": { "item": "minecraft:rotten_flesh", "count": 9 }
+  }
+}

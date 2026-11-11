@@ -1,0 +1,17 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "Nautic Explorer Symbols",
+    "description": "Optionale Statussymbole für die Actionbar",
+    "uuid": "c9bc42fa-1eb3-47df-b9cf-7409f21f80b5",
+    "version": [0, 1, 0],
+    "min_engine_version": [1, 21, 70]
+  },
+  "modules": [
+    {
+      "type": "resources",
+      "uuid": "9cecae2f-ff14-45a5-8fea-9001e7003a45",
+      "version": [0, 1, 0]
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:attachable": {
+    "description": {
+      "identifier": "nautic:basic_flippers",
+      "materials": { "default": "entity_alphatest" },
+      "textures": { "default": "textures/models/basic_flippers" },
+      "geometry": { "default": "geometry.nautic_flippers" },
+      "scripts": { "parent_setup": "variable.is_on_ground = query.is_on_ground;" },
+      "render_controllers": ["controller.render.nautic_flippers"]
+    }
+  }
+}

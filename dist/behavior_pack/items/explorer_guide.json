@@ -1,0 +1,11 @@
+{
+  "format_version": "1.21.30",
+  "minecraft:item": {
+    "description": { "identifier": "nautic:explorer_guide", "menu_category": { "category": "items" } },
+    "components": {
+      "minecraft:max_stack_size": 1,
+      "minecraft:icon": { "textures": { "default": "explorer_guide" } },
+      "minecraft:display_name": { "value": "item.nautic:explorer_guide" }
+    }
+  }
+}

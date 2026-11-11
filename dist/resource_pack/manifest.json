@@ -1,0 +1,17 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "Nautic Explorer Resources",
+    "description": "Pixelgrafik für Nautic Explorer",
+    "uuid": "a7434372-bd01-49e8-9817-6a4ce9ebbb1a",
+    "version": [0, 1, 0],
+    "min_engine_version": [1, 21, 70]
+  },
+  "modules": [
+    {
+      "type": "resources",
+      "uuid": "fead5f14-6c45-44ad-84f8-68f069f4e4a7",
+      "version": [0, 1, 0]
+    }
+  ]
+}

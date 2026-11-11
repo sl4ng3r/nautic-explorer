@@ -1,0 +1,11 @@
+{
+  "format_version": "1.8.0",
+  "render_controllers": {
+    "controller.render.nautic_flippers": {
+      "arrays": { "textures": { "Array.base": ["Texture.default"] } },
+      "geometry": "Geometry.default",
+      "materials": [{ "*": "Material.default" }],
+      "textures": ["Array.base[0]"]
+    }
+  }
+}

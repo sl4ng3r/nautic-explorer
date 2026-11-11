@@ -1,0 +1,29 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "Nautic Explorer Behavior",
+    "description": "Unterwasser-Ausrüstung und Rezepte",
+    "uuid": "3e1dfaa9-8fc0-4e7e-8bbd-cf4e7a7f4d24",
+    "version": [0, 1, 0],
+    "min_engine_version": [1, 21, 70]
+  },
+  "modules": [
+    {
+      "type": "data",
+      "uuid": "e9b5d37e-42e3-44bc-9bdf-57f4432b32e7",
+      "version": [0, 1, 0]
+    },
+    {
+      "type": "script",
+      "language": "javascript",
+      "entry": "scripts/main.js",
+      "uuid": "b1b0e8f9-6777-47b6-bc12-9f9df1e61e2d",
+      "version": [0, 1, 0]
+    }
+  ],
+  "dependencies": [
+    { "uuid": "a7434372-bd01-49e8-9817-6a4ce9ebbb1a", "version": [0, 1, 0] },
+    { "module_name": "@minecraft/server", "version": "2.9.0" },
+    { "module_name": "@minecraft/server-ui", "version": "2.3.0" }
+  ]
+}
