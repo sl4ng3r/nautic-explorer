@@ -1,6 +1,6 @@
 {
   "name": "nautic-explorer",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "private": true,
   "description": "Minecraft Bedrock add-on for underwater exploration.",
   "type": "module",
