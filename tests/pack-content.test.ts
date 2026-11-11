@@ -28,7 +28,7 @@ describe('pack content', () => {
       const recipe = RECIPES.find(r => r.id === guide.id)!;
       expect(guide.ingredients.map(i => [i.item, i.count])).toEqual(recipe.ingredients.map(i => [i.item, i.count]));
       expect(guide.ingredients.every(i => i.icon.startsWith('textures/'))).toBe(true);
-      expect(guide.effect.length).toBeGreaterThan(0);
+      expect(guide.effect.translate).toBeTruthy();
     }
   });
   it('provides an icon for each selectable pack', () => {

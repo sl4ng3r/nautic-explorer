@@ -1,16 +1,19 @@
 // Bedrock runtime entrypoint. The Bedrock runtime supplies these modules when the pack is loaded.
 // @ts-nocheck
 import { EquipmentSlot, EntityComponentTypes, system, world } from "@minecraft/server";
-import { ActionFormData } from "@minecraft/server-ui";
-import { GUIDE_RECIPES } from "../domain/guide";
+import { ActionFormData, CustomForm } from "@minecraft/server-ui";
+import { GUIDE_RECIPES, populateRecipeForm } from "../domain/guide";
 import { encodeHudStatus } from "../domain/hud";
+import { MovementController } from "../domain/movement";
+import { renderStatus } from "../domain/status";
+import { TEXT_KEYS as K, translate } from "../domain/localization";
 
 const POTION_ID = "nautic:deep_breath_potion";
 const GUIDE_ID = "nautic:explorer_guide";
 const BASIC_FLIPPERS_ID = "nautic:basic_flippers";
 const DIAMOND_FLIPPERS_ID = "nautic:diamond_flippers";
 const BREATH_TICKS = 6000;
-const baselineWaterMovement = new Map();
+const movementController = new MovementController();
 
 function getFlipperTier(player) {
   const equippable = player.getComponent(EntityComponentTypes.Equippable);
@@ -35,25 +38,13 @@ function setStatusMode(player, mode) {
   if (mode === "icons") player.addTag("nautic_status_icons");
 }
 
-function formatTime(ticks) {
-  const seconds = Math.max(0, Math.ceil(ticks / 20));
-  const minutes = Math.floor(seconds / 60);
-  return `${minutes}:${String(seconds % 60).padStart(2, "0")}`;
-}
-
 function statusText(player) {
-  const mode = getStatusMode(player);
-  if (mode === "off") return "";
-  const parts = [];
-  const breath = player.getEffect("water_breathing");
-  if (breath && breath.duration > 0) {
-    parts.push(`${mode === "icons" ? "◌" : "Wasseratmung"} ${formatTime(breath.duration)}`);
-  }
-  const tier = getFlipperTier(player);
-  if (player.isInWater && tier !== "none") {
-    parts.push(`${mode === "icons" ? "≋" : "Flossen"} +${tier === "diamond" ? 50 : 10}%`);
-  }
-  return parts.join(" §8·§r ");
+  return renderStatus({
+    mode: getStatusMode(player),
+    waterBreathingTicks: player.getEffect("water_breathing")?.duration ?? 0,
+    flipperTier: getFlipperTier(player),
+    isInWater: player.isInWater,
+  });
 }
 
 function applyPotion(player) {
@@ -64,38 +55,19 @@ function applyPotion(player) {
   });
 }
 
-function getWaterMovementComponent(player) {
-  return player.getComponent("minecraft:underwater_movement");
-}
-
 function updateFlipperSpeed(player) {
-  const tier = getFlipperTier(player);
-  const component = getWaterMovementComponent(player);
-  if (!component) return;
-  const key = player.id;
-  const active = player.isInWater && tier !== "none";
-  if (!active) {
-    const previous = baselineWaterMovement.get(key);
-    if (previous !== undefined) {
-      component.setCurrentValue(previous);
-      baselineWaterMovement.delete(key);
-    }
-    return;
-  }
-  if (!baselineWaterMovement.has(key)) baselineWaterMovement.set(key, component.currentValue);
-  const base = baselineWaterMovement.get(key);
-  component.setCurrentValue(base * (tier === "diamond" ? 1.5 : 1.1));
+  movementController.update(player.id, player.getComponent("minecraft:movement"), player.isInWater, getFlipperTier(player));
 }
 
 async function showGuide(player) {
   const form = new ActionFormData()
     .title("Nautic Explorer")
-    .body("Dein kompaktes Handbuch für die ersten Tauchgänge.")
-    .button("Trank der Tiefenatmung", "textures/items/deep_breath_potion")
-    .button("Einfache Flossen", "textures/items/basic_flippers")
-    .button("Diamantflossen", "textures/items/diamond_flippers")
-    .button("Fleischbündel", "textures/items/flesh_bundle")
-    .button("Statusanzeige einstellen");
+    .body(translate(K.intro))
+    .button(translate(K.potion), "textures/items/deep_breath_potion")
+    .button(translate(K.basicFlippers), "textures/items/basic_flippers")
+    .button(translate(K.diamondFlippers), "textures/items/diamond_flippers")
+    .button(translate(K.fleshBundle), "textures/items/flesh_bundle")
+    .button(translate(K.settings));
   const result = await form.show(player);
   if (result.canceled) return;
   if (result.selection === 4) return showStatusSettings(player);
@@ -104,32 +76,25 @@ async function showGuide(player) {
 }
 
 async function showRecipe(player, guide) {
-  while (true) {
-    const form = new ActionFormData()
-      .title(guide.title)
-      .body(`§lWirkung§r\n${guide.effect}\n\n§lZutaten§r\nJe Zutat ein eigenes Feld an der Werkbank belegen.`);
-    for (const ingredient of guide.ingredients) {
-      form.button(`${ingredient.count} × ${ingredient.name}`, ingredient.icon);
-    }
-    form.button("Zurück");
-    const result = await form.show(player);
-    if (result.canceled) return;
-    if (result.selection === guide.ingredients.length) return showGuide(player);
-  }
-
+  const form = new CustomForm(player, guide.title);
+  populateRecipeForm(form, guide);
+  let goBack = false;
+  form.button(translate(K.back), () => { goBack = true; form.close(); });
+  await form.show();
+  if (goBack) await showGuide(player);
 }
 
 async function showStatusSettings(player) {
   const form = new ActionFormData()
-    .title("Statusanzeige")
-    .body("Wähle, wie die aktive Atemzeit und Flossengeschwindigkeit erscheinen sollen.")
-    .button("Symbole")
-    .button("Text")
-    .button("Aus");
+    .title(translate(K.settings))
+    .body(translate(K.settingsDescription))
+    .button(translate(K.icons))
+    .button(translate(K.text))
+    .button(translate(K.off));
   const result = await form.show(player);
   if (result.canceled) return;
   setStatusMode(player, ["icons", "text", "off"][result.selection]);
-  player.sendMessage("§bNautic Explorer§r: Statusanzeige aktualisiert.");
+  player.sendMessage({ rawtext: [{ text: "§bNautic Explorer§r: " }, translate(K.settingsUpdated)] });
 }
 
 system.beforeEvents.startup.subscribe(({ itemComponentRegistry }) => {
@@ -145,9 +110,14 @@ world.afterEvents.itemUse.subscribe(({ source, itemStack }) => {
   if (itemStack.typeId === GUIDE_ID) showGuide(source).catch(() => undefined);
 });
 
+world.afterEvents.playerLeave.subscribe(({ playerId }) => movementController.forget(playerId));
+
+system.runInterval(() => {
+  for (const player of world.getPlayers()) updateFlipperSpeed(player);
+}, 1);
+
 system.runInterval(() => {
   for (const player of world.getPlayers()) {
-    updateFlipperSpeed(player);
     const status = statusText(player);
     if (status) player.onScreenDisplay.setActionBar(encodeHudStatus(status));
   }

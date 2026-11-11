@@ -12,3 +12,5 @@ Erzeugte Motive:
 - `glyphs.png`: Luftblasen- und Flossensymbol für das optionale Statuspaket.
 
 Gemeinsame Vorgaben für die Generierung waren Minecraft-nahe Pixelgrafik, klare Silhouetten, transparenter Hintergrund, keine Schrift und keine Wasserzeichen. Itemgrafiken sind 32×32 Pixel; das Symbolblatt ist 32×16 Pixel.
+
+Die Texturen unter `addon/resource_pack/textures/guide/` stammen aus dem offiziellen [Mojang Bedrock Samples Resource Pack](https://github.com/Mojang/bedrock-samples/tree/main/resource_pack/textures). Sie werden in den Rezeptseiten als eigenständige Bilder angezeigt.

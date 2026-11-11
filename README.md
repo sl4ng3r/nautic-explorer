@@ -2,7 +2,7 @@
 
 Ein Bedrock-Add-on für Unterwasserforscher.
 
-Enthalten sind der fünfminütige Trank der Tiefenatmung, einfache Flossen mit +10 %, Diamantflossen mit +50 %, Fleischbündel und ein interaktives Handbuch. Die Rezepte sind formlos und an der Werkbank herstellbar.
+Enthalten sind der fünfminütige Trank der Tiefenatmung, einfache Flossen mit +20 %, Diamantflossen mit +60 %, Fleischbündel und ein interaktives Handbuch. Die Rezepte sind formlos und an der Werkbank herstellbar.
 
 ## Entwicklung
 

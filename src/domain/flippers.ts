@@ -1,5 +1,5 @@
-export const BASIC_FLIPPER_MULTIPLIER = 1.1;
-export const DIAMOND_FLIPPER_MULTIPLIER = 1.5;
+export const BASIC_FLIPPER_MULTIPLIER = 1.2;
+export const DIAMOND_FLIPPER_MULTIPLIER = 1.6;
 
 export type FlipperTier = "none" | "basic" | "diamond";
 

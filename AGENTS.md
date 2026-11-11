@@ -26,4 +26,4 @@ Das Add-on hat keine externe Datenbank, keine Geheimnisse und keinen Serverdiens
 
 ## Laufzeitgrenzen
 
-Die Flossengeschwindigkeit nutzt die verfügbare Spieler-Komponente `minecraft:underwater_movement`. Vor einer produktiven Realm-Abnahme muss die Geschwindigkeit in einer echten Welt gemessen werden. Falls die Komponente auf der Zielversion nicht verfügbar ist, meldet das Skript keinen künstlichen Vortrieb; dann muss die Bewegungstechnik gegen die konkrete Bedrock-Version angepasst werden.
+Die Flossen ändern versuchsweise die Spieler-Komponente `minecraft:movement` nur im Wasser und stellen den Ausgangswert beim Verlassen des Wassers oder Ausziehen wieder her, sofern keine andere Änderung erkannt wurde. Normales Schwimmen und Sprintschwimmen, andere Effekte, Ausloggen und Landbewegung müssen vor Realm-Einsatz in einer echten Welt geprüft und gemessen werden; die tatsächlichen Prozentwerte sind nicht belegt. Die HUD-Position muss bei verschiedenen Bildschirmgrößen und gleichzeitigen Effekten geprüft werden.
