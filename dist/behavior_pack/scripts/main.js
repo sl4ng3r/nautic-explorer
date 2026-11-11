@@ -217,7 +217,7 @@ function updateFlipperSpeed(player) {
       impulseDiagnostics.set(player.id, { active: false });
       return;
     }
-    player.applyKnockback({ x: impulse.x, z: impulse.z }, impulse.y);
+    player.applyImpulse(impulse);
     impulseDiagnostics.set(player.id, { active: true });
   } catch (error) {
     impulseDiagnostics.set(player.id, { active: false, error: String(error) });
@@ -283,7 +283,7 @@ system.afterEvents.scriptEventReceive.subscribe(({ id, message, sourceEntity: pl
   if (message !== "start") return;
   swimHud.set(player.id, void 0);
   swimProbes.set(player.id, { probe: new SwimProbe(), start: system.currentTick + 60, wallStart: void 0 });
-  player.sendMessage("[Nautic probe 0.1.10] Starts in 3 seconds; swim straight for 10 seconds. Keep the same flippers and stay underwater. Result follows in chat.");
+  player.sendMessage("[Nautic probe 0.1.11] Starts in 3 seconds; swim straight for 10 seconds. Keep the same flippers and stay underwater. Result follows in chat.");
 });
 system.runInterval(() => {
   for (const player of world.getPlayers()) {
@@ -309,7 +309,7 @@ system.runInterval(() => {
       });
       if (system.currentTick >= run.start + 200) {
         const report = { ...run.probe.result(), wallSeconds: (Date.now() - run.wallStart) / 1e3 };
-        player.sendMessage("[Nautic probe 0.1.10] " + JSON.stringify(report));
+        player.sendMessage("[Nautic probe 0.1.11] " + JSON.stringify(report));
         swimProbes.delete(player.id);
       }
     } catch (error) {
