@@ -5,9 +5,8 @@ describe('experimental swim propulsion', () => {
   it('applies smaller finite impulses to basic than diamond flippers', () => {
     const basic = swimImpulse(swimming)!;
     const diamond = swimImpulse({ ...swimming, tier: 'diamond' })!;
-    expect(basic.z).toBeGreaterThan(0);
-    expect(diamond.z).toBeGreaterThan(basic.z);
-    expect(diamond.z).toBeLessThanOrEqual(0.05);
+    expect(basic.z).toBeCloseTo(diamond.z * 0.3, 4);
+    expect(diamond.z).toBeCloseTo(0.06, 4);
   });
   it('never propels without flippers, outside water, without forward input or while riding', () => {
     for (const override of [{ tier: 'none' as const }, { inWater: false }, { forward: 0 }, { forward: -1 }, { isRiding: true }]) expect(swimImpulse({ ...swimming, ...override })).toBeUndefined();

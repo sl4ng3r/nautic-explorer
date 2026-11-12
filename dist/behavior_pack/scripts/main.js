@@ -117,7 +117,7 @@ function horizontalSpeedBetween(a, b) {
 }
 
 // src/domain/movement.ts
-var FORCES = { basic: 0.015, diamond: 0.045 };
+var FORCES = { basic: 0.018, diamond: 0.06 };
 var VELOCITY_CAP = 0.4;
 function swimImpulse(input) {
   if (!input.inWater || input.tier === "none" || input.isRiding || !(input.forward > 0.1)) return void 0;
@@ -283,7 +283,7 @@ system.afterEvents.scriptEventReceive.subscribe(({ id, message, sourceEntity: pl
   if (message !== "start") return;
   swimHud.set(player.id, void 0);
   swimProbes.set(player.id, { probe: new SwimProbe(), start: system.currentTick + 60, wallStart: void 0 });
-  player.sendMessage("[Nautic probe 0.1.11] Starts in 3 seconds; swim straight for 10 seconds. Keep the same flippers and stay underwater. Result follows in chat.");
+  player.sendMessage("[Nautic probe 0.1.12] Starts in 3 seconds; swim straight for 10 seconds. Keep the same flippers and stay underwater. Result follows in chat.");
 });
 system.runInterval(() => {
   for (const player of world.getPlayers()) {
@@ -309,7 +309,7 @@ system.runInterval(() => {
       });
       if (system.currentTick >= run.start + 200) {
         const report = { ...run.probe.result(), wallSeconds: (Date.now() - run.wallStart) / 1e3 };
-        player.sendMessage("[Nautic probe 0.1.11] " + JSON.stringify(report));
+        player.sendMessage("[Nautic probe 0.1.12] " + JSON.stringify(report));
         swimProbes.delete(player.id);
       }
     } catch (error) {

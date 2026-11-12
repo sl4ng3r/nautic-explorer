@@ -93,3 +93,8 @@ Auf einer Weltkopie ohne Strömung je mindestens drei gleich lange Strecken mit 
 ## Experiment 0.1.11: Direkter Impuls
 
 Rückmeldung zu 0.1.10: Bewegung ruckelt, möglicherweise auch langsamer. Alle fünf Ticks wurde `applyKnockback` verwendet; ob die Rückstoßbehandlung, Synchronisierung oder ein anderer Faktor die Ursache ist, ist nicht nachgewiesen. Für den isolierten Vergleich ersetzt 0.1.11 nur `applyKnockback` durch `applyImpulse`, bei gleicher Richtung, Stärke und gleichem Abstand. Laut [Entity-API](https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/entity?view=minecraft-bedrock-stable#applyimpulse) wirkt diese Methode auf die Geschwindigkeit; ob sie bei Spielern in 26.63 lokal und auf Realms tatsächlich Wirkung zeigt, ist ungeprüft. `Boost=1` besagt nur, dass der API-Aufruf ohne Fehler erfolgte, nicht dass sich die Geschwindigkeit geändert hat. Wenn kein Effekt auftritt oder das Ruckeln bleibt, ist dieser Versuch gescheitert.
+
+
+## Experiment 0.1.12: Stärkerer Diamantschub
+
+Der Nutzer berichtet zu 0.1.11, dass normales Schwimmen und Sprintschwimmen schneller und ohne Ruckler funktionieren. Für 0.1.12 steigt der Diamant-Impuls von 0,045 auf 0,06 pro fünf Ticks; einfache Flossen steigen von 0,015 auf 0,018 und erreichen damit 30 % des Diamant-Impulses. Die bestehende Begrenzung bleibt unverändert. Das ist eine Erhöhung der eingestellten Impulsstärke um ein Drittel, keine Aussage über den tatsächlichen Geschwindigkeitszuwachs. Messung und Realm-Test stehen aus.

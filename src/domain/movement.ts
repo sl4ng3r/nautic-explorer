@@ -4,7 +4,7 @@ type Vec3 = { x: number; y: number; z: number };
 type SwimInput = { inWater: boolean; tier: FlipperTier; forward: number; view: Vec3; velocity: Vec3; isRiding: boolean };
 
 // Experimental forces, not calibrated speed multipliers. Runs once per five ticks.
-const FORCES = { basic: 0.015, diamond: 0.045 } as const;
+const FORCES = { basic: 0.018, diamond: 0.06 } as const;
 const VELOCITY_CAP = 0.4;
 
 export function swimImpulse(input: SwimInput): Vec3 | undefined {
